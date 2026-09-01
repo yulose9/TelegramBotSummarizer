@@ -1,26 +1,47 @@
-# AI Article Summarizer (Telegram Bot)
+# TelegramBotSummarizer
 
-An AI-powered Telegram bot built as a Serverless Next.js application. 
-It receives a URL from a user, fetches and parses the article, and uses Google's Gemini AI to return a concise 3-bullet-point summary.
+> Drop any article link in the Telegram chat and get 3 crisp bullet points back — powered by Gemini AI. No reading required.
 
-## Architecture
+**🤖 Try the Bot:** [@TGTxtSummProjAutomationBot](https://t.me/TGTxtSummProjAutomationBot)  
+**🌐 Live Web Dashboard:** [bot-app-psi.vercel.app](https://bot-app-psi.vercel.app)
+
+---
+
+## ⚡ How the Compute Works (Vercel Serverless + Webhooks)
+
+When you deploy this project to Vercel, it isn't just hosting a static website — **Vercel acts as the full compute engine for the Telegram bot.**
+
+Instead of keeping a computer running 24/7 (polling), this bot uses **Serverless Webhooks**:
+1. When a user sends a message on Telegram, Telegram makes a `POST` request to our live Vercel API endpoint (`/api/webhook`).
+2. Vercel instantly spins up a secure, temporary compute container (a Serverless Function).
+3. The function reads the article, talks to the Gemini API, formats the summary, and replies to Telegram.
+4. The compute container shuts down immediately.
+
+Because Vercel Serverless Functions scale automatically from zero to millions, the bot can handle hundreds of users at the exact same time without ever crashing, and you don't pay for idle server time.
+
+## 🛠 Tech Stack
 
 - **Framework**: Next.js (App Router)
-- **UI**: Tailwind CSS + shadcn/ui for the landing page
-- **Bot Engine**: `telegraf` handling incoming Telegram Webhooks
-- **Content Extraction**: `@mozilla/readability` + `jsdom`
-- **AI**: `@google/genai` (Gemini 2.5 Flash model)
-- **Deployment**: Designed to be deployed on Vercel as a serverless function
+- **AI Model**: Google Gemini 2.5 Flash (`@google/genai`)
+- **Bot Engine**: Telegraf
+- **Content Extraction**: Mozilla Readability + JSDOM
+- **UI / Animations**: Tailwind CSS, shadcn/ui, Framer Motion
+- **Infrastructure**: Vercel Serverless Edge/Node
 
-## How It Works
+## 🚀 Local Development
 
-1. **User sends URL**: The bot receives a message containing a link via Telegram Webhook (handled by `src/app/api/webhook/route.ts`).
-2. **Bot grabs content**: The Next.js API route fetches the HTML and cleans it up using Mozilla Readability.
-3. **Prompt asks for bullets**: The cleaned article text is sent to Gemini AI with a strict prompt to summarize.
-4. **Response goes back**: The AI response is sent back to the Telegram chat.
+Create a `.env.local` file with your keys:
+```env
+BOT_TOKEN=your_telegram_bot_token
+GEMINI_API_KEY=your_gemini_api_key
+```
 
-## What I'd Add Next
+Run the local polling script to test without deploying:
+```bash
+node local-test.js
+```
 
-- **Caching**: Store previously summarized URLs in a database (like Supabase or Redis) to save AI tokens and respond instantly.
-- **Support for Paywalls/PDFs**: Adding Playwright or a specialized extraction API (like Firecrawl) to handle dynamic content or PDFs.
-- **Audio Summaries**: Integrate TTS (Text-to-Speech) so the bot sends voice notes instead of text.
+Or run the Next.js dev server to view the web dashboard:
+```bash
+npm run dev
+```
