@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server';
 import { Telegraf } from 'telegraf';
 import { GoogleGenAI } from '@google/genai';
-import { Readability } from '@mozilla/readability';
-import { JSDOM } from 'jsdom';
+import * as cheerio from 'cheerio';
 
 const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN || 'dummy_token');
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
@@ -72,11 +71,12 @@ bot.on('text', async (ctx) => {
     if (!response.ok) throw new Error('Failed to fetch the URL');
     const html = await response.text();
 
-    const doc = new JSDOM(html, { url });
-    const reader = new Readability(doc.window.document);
-    const article = reader.parse();
+    const $ = cheerio.load(html);
+    $('script, style, nav, footer, header, aside, noscript, svg, button').remove();
+    const textContent = $('body').text().replace(/\s+/g, ' ').trim();
+    const title = escapeHTML($('title').text() || 'Untitled Article');
 
-    if (!article || !article.textContent) {
+    if (!textContent) {
       throw new Error('Could not extract readable text from this page.');
     }
 
@@ -84,7 +84,7 @@ bot.on('text', async (ctx) => {
       ctx.chat.id, 
       processingMessage.message_id, 
       undefined, 
-      '🧠 Article extracted! Generating summary with Gemini AI...'
+      '✅ Article extracted! Generating summary with Gemini AI...'
     );
 
     const prompt = `You are a professional article summarizer. Summarize the following article in exactly 3 key takeaways.
@@ -92,14 +92,14 @@ bot.on('text', async (ctx) => {
 Rules:
 - Each takeaway should be 1-2 sentences max
 - Use plain text only, no markdown, no asterisks, no special formatting
-- Do NOT include bullet characters — just return each takeaway on its own line
+- Do NOT include bullet characters - just return each takeaway on its own line
 - Separate each takeaway with a blank line
 - Be insightful, not generic
 
-Title: ${article.title}
+Title: ${title}
 
 Content:
-${article.textContent.slice(0, 20000)}`;
+${textContent.slice(0, 20000)}`;
     
     const aiResponse = await ai.models.generateContent({
       model: 'gemini-2.5-flash-preview-05-20',
@@ -107,7 +107,6 @@ ${article.textContent.slice(0, 20000)}`;
     });
 
     const rawSummary = (aiResponse.text || 'No summary generated.').trim();
-    const title = escapeHTML(article.title || 'Untitled');
 
     const bullets = rawSummary
       .split(/\n+/)
