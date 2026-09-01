@@ -14,13 +14,13 @@ function escapeHTML(text: string): string {
     .replace(/>/g, '&gt;');
 }
 
-bot.start((ctx) => {
-  ctx.reply(
+bot.start(async (ctx) => {
+  await ctx.reply(
     "👋 <b>Welcome to the AI Article Summarizer!</b>\n\n" +
     "I'm an AI-powered automation bot that saves you time.\n\n" +
-    "🔗 <b>Send me any article link</b> and I'll read it for you\n" +
-    "📝 Get a <b>3-bullet summary</b> powered by Gemini AI\n" +
-    "⚡ Instant results — no sign-up needed\n\n" +
+    "📰 <b>Send me any article link</b> and I'll read it for you\n" +
+    "⚡ Get a <b>3-bullet summary</b> powered by Gemini AI\n" +
+    "🚀 Instant results - no sign-up needed\n\n" +
     "Just paste a URL below to get started!",
     {
       parse_mode: 'HTML',
@@ -34,10 +34,10 @@ bot.start((ctx) => {
   );
 });
 
-bot.action('how_to_use', (ctx) => {
-  ctx.answerCbQuery();
-  ctx.reply(
-    "📖 <b>How to Use This Bot</b>\n\n" +
+bot.action('how_to_use', async (ctx) => {
+  await ctx.answerCbQuery();
+  await ctx.reply(
+    "✅ <b>How to Use This Bot</b>\n\n" +
     "1️⃣ Copy a link to any article, blog post, or news story\n" +
     "2️⃣ Paste the URL right here in this chat\n" +
     "3️⃣ Wait a few seconds while Gemini AI reads and summarizes it\n" +
@@ -47,8 +47,8 @@ bot.action('how_to_use', (ctx) => {
   );
 });
 
-bot.help((ctx) => {
-  ctx.reply("Send me any URL and I'll summarize it for you!");
+bot.help(async (ctx) => {
+  await ctx.reply("Send me any URL and I'll summarize it for you!");
 });
 
 bot.on('text', async (ctx) => {
