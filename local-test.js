@@ -27,7 +27,12 @@ bot.start((ctx) => {
     "Just paste a URL below to get started!",
     {
       parse_mode: 'HTML',
-      reply_markup: keyboard.reply_markup
+      reply_markup: {
+        inline_keyboard: [
+          [{ text: '🌐 Open Dashboard', web_app: { url: 'https://bot-app-psi.vercel.app/miniapp.html' } }],
+          [{ text: '📖 How to Use', callback_data: 'how_to_use' }]
+        ]
+      }
     }
   );
 });
